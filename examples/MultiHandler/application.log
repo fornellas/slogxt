@@ -1,0 +1,4 @@
+2025-06-14 13:51:36 DEBUG Debug message
+2025-06-14 13:51:36 INFO Info message
+2025-06-14 13:51:36 WARN Warning message
+2025-06-14 13:51:36 ERROR Error occurred [code: 500]

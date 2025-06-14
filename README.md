@@ -25,7 +25,7 @@ This is particularly useful in somme scenarios:
 
 Here's the output from [TerminalTreeHandler example](https://github.com/fornellas/slogxpert/blob/main/examples/TerminalTreeHandler/main.go):
 
-![TerminalTreeHandler](https://github.com/fornellas/slogxpert/blob/master/examples/TerminalTreeHandler/output.svg)
+[![TerminalTreeHandler](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/TerminalTreeHandler/output.svg)]
 
 #### TerminalLineHandler
 
@@ -33,7 +33,7 @@ The `TerminalLineHandler` is similar to `TerminalTreeHandler`, but instead of ne
 
 Here's the output from [TerminalLineHandler example](https://github.com/fornellas/slogxpert/blob/main/examples/TerminalLineHandler/main.go):
 
-![TerminalLineHandler](https://github.com/fornellas/slogxpert/blob/master/examples/TerminalLineHandler/output.svg)
+[![TerminalLineHandler](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/TerminalLineHandler/output.svg)]
 
 #### Customizing
 
@@ -43,13 +43,13 @@ Handlers can be customized to your taste.
 
 The full color scheme can be customized, by defining a color scheme, as in the [TerminalHandlerColorScheme example](https://github.com/fornellas/slogxpert/blob/main/examples/TerminalHandlerColorScheme/main.go), which tweaks the colors:
 
-![TerminalHandlerColorScheme](https://github.com/fornellas/slogxpert/blob/master/examples/TerminalHandlerColorScheme/output.svg)
+[![TerminalHandlerColorScheme](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/TerminalHandlerColorScheme/output.svg)]
 
 ##### TerminalHandlerOptions
 
 `TerminalHandlerOptions` provides extensive customization options for both terminal handlers. In the [TerminalHandlerOptions example](https://github.com/fornellas/slogxpert/blob/main/examples/TerminalHandlerOptions/main.go), a custom log level, source code information, sensitive information masking and time are set:
 
-![TerminalHandlerOptions](https://github.com/fornellas/slogxpert/blob/master/examples/TerminalHandlerOptions/output.svg)
+[![TerminalHandlerOptions](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/TerminalHandlerOptions/output.svg)]
 
 ### BufferedHandler
 
@@ -57,7 +57,7 @@ The `BufferedHandler` allows you to buffer log records in memory until you expli
 
 In the [BufferedHandler example](https://github.com/fornellas/slogxpert/blob/main/examples/BufferedHandler/main.go), the output below only happens when `Flush()` is called:
 
-![BufferedHandler](https://github.com/fornellas/slogxpert/blob/master/examples/BufferedHandler/output.svg)
+[![BufferedHandler](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/BufferedHandler/output.svg)]
 
 ### MultiHandler
 
@@ -65,7 +65,7 @@ The `MultiHandler` dispatches log records to multiple handlers simultaneously. T
 
 In the [MultiHandler example](https://github.com/fornellas/slogxpert/blob/main/examples/MultiHandler/main.go), logs are dispatched to two handlers, one in the terminal:
 
-![MultiHandler](https://github.com/fornellas/slogxpert/blob/master/examples/MultiHandler/output.svg)
+[![MultiHandler](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/MultiHandler/output.svg)]
 
 and another to a file:
 
@@ -82,4 +82,4 @@ The package provides utilities for associating loggers with context objects, whi
 
 In the [Context example](https://github.com/fornellas/slogxpert/blob/main/examples/Context/main.go), loggers are set and retrieved from the context, resulting in the following output:
 
-![Context](https://github.com/fornellas/slogxpert/blob/master/examples/Context/output.svg)
+[![Context](https://raw.githubusercontent.com/fornellas/slogxpert/refs/heads/main/examples/Context/output.svg)]

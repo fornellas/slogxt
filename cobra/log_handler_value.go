@@ -7,8 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fornellas/slogxpert"
 	_ "github.com/spf13/pflag"
+
+	"github.com/fornellas/slogxpert"
 )
 
 // LogHandlerValueOptions holds some options for [slogxpert.TerminalHandlerOptions].

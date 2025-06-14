@@ -19,6 +19,7 @@ tool (
 )
 
 require (
+	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/term v0.32.0
 )
@@ -52,7 +53,6 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rakyll/gotest v0.0.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/williammartin/subreaper v0.0.0-20181101193406-731d9ece6883 // indirect
 	github.com/yoheimuta/go-protoparser/v4 v4.14.0 // indirect

@@ -28,9 +28,7 @@ func main() {
 }
 
 func authenticateUser(ctx context.Context, username, password string) bool {
-	logger := slogxpert.MustLogger(ctx)
-
-	ctx, logger = slogxpert.MustWithGroupAttrs(ctx, "login", "username", username)
+	ctx, logger := slogxpert.MustWithGroupAttrs(ctx, "login", "username", username)
 
 	logger.Info("User authentication")
 	return checkPassword(ctx, username, password)
@@ -39,5 +37,5 @@ func authenticateUser(ctx context.Context, username, password string) bool {
 func checkPassword(ctx context.Context, username, password string) bool {
 	logger := slogxpert.MustLogger(ctx)
 	logger.Debug("Checking user and password")
-	return username == "john" && "secret" == password
+	return username == "john" && password == "secret"
 }

@@ -42,7 +42,7 @@ $(error Unsupported system: $(UNAME_S))
 endif
 endif
 
-CACHE_PATH ?= $(XDG_CACHE_HOME)/slogxpert
+CACHE_PATH ?= $(XDG_CACHE_HOME)/slogxt
 
 # Go
 

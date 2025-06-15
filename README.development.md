@@ -3,8 +3,8 @@
 Getting started is _super easy_: just run these commands under Linux or MacOS:
 
 ```bash
-git clone git@github.com:fornellas/slogxpert.git
-cd slogxpert/
+git clone git@github.com:fornellas/slogxt.git
+cd slogxt/
 ./make.sh ci # runs linters, tests and build
 ```
 

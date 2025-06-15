@@ -9,8 +9,8 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/fornellas/slogxpert/ansi"
-	"github.com/fornellas/slogxpert/unicode"
+	"github.com/fornellas/slogxt/ansi"
+	"github.com/fornellas/slogxt/unicode"
 )
 
 // ANSI color scheme

@@ -1,4 +1,4 @@
-module github.com/fornellas/slogxpert
+module github.com/fornellas/slogxt
 
 go 1.24.4
 

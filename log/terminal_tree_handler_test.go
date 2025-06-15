@@ -1,4 +1,4 @@
-package slogxpert
+package log
 
 import (
 	"bytes"
@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestTerminalLineHandler(t *testing.T) {
+func TestTerminalTreeHandler(t *testing.T) {
 	t.Run("Interface", func(t *testing.T) {
-		var _ slog.Handler = &TerminalLineHandler{}
+		var _ slog.Handler = &TerminalTreeHandler{}
 	})
 
 	t.Run("Enabled", func(t *testing.T) {
@@ -37,7 +37,7 @@ func TestTerminalLineHandler(t *testing.T) {
 				var levelVar slog.LevelVar
 				levelVar.Set(tt.minLevel)
 
-				h := NewTerminalLineHandler(&bytes.Buffer{}, &TerminalHandlerOptions{
+				h := NewTerminalTreeHandler(&bytes.Buffer{}, &TerminalHandlerOptions{
 					HandlerOptions: slog.HandlerOptions{
 						Level: &levelVar,
 					},
@@ -59,7 +59,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "simple_message",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
@@ -72,7 +72,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "with_attrs",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h.WithAttrs([]slog.Attr{
 						slog.String("service", "test"),
 						slog.Int("version", 1),
@@ -86,8 +86,13 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO [service: test, version: 1]: hello with attrs [user: tester]\n"+
-							"INFO [service: test, version: 1, extra: attr]: hello with extra attrs [something: else]\n",
+						"service: test\n"+
+							"version: 1\n"+
+							"INFO hello with attrs\n"+
+							"  user: tester\n"+
+							"extra: attr\n"+
+							"INFO hello with extra attrs\n"+
+							"  something: else\n",
 						output,
 					)
 				},
@@ -95,7 +100,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "with_groups",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h.WithGroup("server").WithAttrs([]slog.Attr{
 						slog.String("type", "api"),
 					}))
@@ -108,8 +113,13 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO 🏷️ server [type: api]: started server [port: 8080]\n"+
-							"INFO 🏷️ server [type: api, extra: attr]: with extra attrs [something: else]\n",
+						"🏷️ server\n"+
+							"  type: api\n"+
+							"  INFO started server\n"+
+							"    port: 8080\n"+
+							"  extra: attr\n"+
+							"  INFO with extra attrs\n"+
+							"    something: else\n",
 						output,
 					)
 				},
@@ -117,7 +127,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "with_similar_groups",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
@@ -129,8 +139,9 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO 🏷️ Same Group: first\n"+
-							"INFO 🏷️ Same Group: second\n",
+						"🏷️ Same Group\n"+
+							"  INFO first\n"+
+							"  INFO second\n",
 						output,
 					)
 				},
@@ -140,13 +151,13 @@ func TestTerminalLineHandler(t *testing.T) {
 				// This tests the code path marked with "FIXME add test" in writeHandlerGroupAttrs
 				name: "different_groups",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					// Just return the base handler, as we'll create multiple loggers in logFunc
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
 					// Get the base handler from the logger
-					h := logger.Handler().(*TerminalLineHandler)
+					h := logger.Handler().(*TerminalTreeHandler)
 
 					// First log with one group
 					logger1 := slog.New(h.WithGroup("group1").WithAttrs([]slog.Attr{
@@ -161,19 +172,23 @@ func TestTerminalLineHandler(t *testing.T) {
 					logger2.Info("second message")
 				},
 				check: func(t *testing.T, output string) {
-					expected := "INFO 🏷️ group1 [attr1: value1]: first message\n" +
-						"INFO 🏷️ group2 [attr2: value2]: second message\n"
+					expected := "🏷️ group1\n" +
+						"  attr1: value1\n" +
+						"  INFO first message\n" +
+						"🏷️ group2\n" +
+						"  attr2: value2\n" +
+						"  INFO second message\n"
 					assert.Equal(t, expected, output)
 				},
 			},
 			{
 				name: "different_groups",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
-					h := logger.Handler().(*TerminalLineHandler)
+					h := logger.Handler().(*TerminalTreeHandler)
 
 					logger1 := slog.New(h.WithGroup("group1").WithAttrs([]slog.Attr{
 						slog.String("attr1", "value1"),
@@ -186,15 +201,19 @@ func TestTerminalLineHandler(t *testing.T) {
 					logger2.Info("second message")
 				},
 				check: func(t *testing.T, output string) {
-					expected := "INFO 🏷️ group1 [attr1: value1]: first message\n" +
-						"INFO 🏷️ group2 [attr2: value2]: second message\n"
+					expected := "🏷️ group1\n" +
+						"  attr1: value1\n" +
+						"  INFO first message\n" +
+						"🏷️ group2\n" +
+						"  attr2: value2\n" +
+						"  INFO second message\n"
 					assert.Equal(t, expected, output)
 				},
 			},
 			{
 				name: "nested_groups",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(
 						h.WithGroup("app").
 							WithAttrs([]slog.Attr{slog.String("version", "1.0")}).
@@ -208,7 +227,13 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO 🏷️ app [version: 1.0] > 🏷️ database [db: sql]: connected [host: localhost, port: 5432]\n",
+						"🏷️ app\n"+
+							"  version: 1.0\n"+
+							"  🏷️ database\n"+
+							"    db: sql\n"+
+							"    INFO connected\n"+
+							"      host: localhost\n"+
+							"      port: 5432\n",
 						output,
 					)
 				},
@@ -216,7 +241,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "group_in_record",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
@@ -231,7 +256,11 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO user action [🏷️ user [id: 123, name: test], action: login]\n",
+						"INFO user action\n"+
+							"  🏷️ user\n"+
+							"    id: 123\n"+
+							"    name: test\n"+
+							"  action: login\n",
 						output,
 					)
 				},
@@ -239,7 +268,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "multiline_string",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h)
 				},
 				logFunc: func(logger *slog.Logger) {
@@ -248,7 +277,11 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"ERROR error occurred [stack: line1\\nline2\\nline3\t tab]\n",
+						"ERROR error occurred\n"+
+							"  stack:\n"+
+							"    line1\n"+
+							"    line2\n"+
+							"    line3\t tab\n",
 						output,
 					)
 				},
@@ -256,7 +289,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "with_timestamp",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{
 						NoColor:    true,
 						TimeLayout: time.RFC3339,
 					})
@@ -266,13 +299,15 @@ func TestTerminalLineHandler(t *testing.T) {
 					logger.Info("message with time")
 				},
 				check: func(t *testing.T, output string) {
-					assert.Regexp(t, `^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?) INFO message with time\n$`, output)
+					assert.Regexp(t, `^INFO message with time
+  ((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)
+$`, output)
 				},
 			},
 			{
 				name: "with_source",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{
 						NoColor: true,
 						HandlerOptions: slog.HandlerOptions{
 							AddSource: true,
@@ -284,13 +319,13 @@ func TestTerminalLineHandler(t *testing.T) {
 					logger.Info("message with source")
 				},
 				check: func(t *testing.T, output string) {
-					assert.Regexp(t, `^INFO message with source .+terminal_line_handler_test\.go:\d+ \(.+\)\n$`, output)
+					assert.Regexp(t, `^INFO message with source\n  .+terminal_tree_handler_test\.go:\d+ \(.+\)\n$`, output)
 				},
 			},
 			{
 				name: "empty_group",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 					return slog.New(h.WithGroup(""))
 				},
 				logFunc: func(logger *slog.Logger) {
@@ -307,7 +342,7 @@ func TestTerminalLineHandler(t *testing.T) {
 			{
 				name: "replace_attr",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
-					h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{
 						NoColor: true,
 						HandlerOptions: slog.HandlerOptions{
 							ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
@@ -326,7 +361,9 @@ func TestTerminalLineHandler(t *testing.T) {
 				check: func(t *testing.T, output string) {
 					assert.Equal(
 						t,
-						"INFO message with sensitive data [sensitive: REDACTED, normal: visible]\n",
+						"INFO message with sensitive data\n"+
+							"  sensitive: REDACTED\n"+
+							"  normal: visible\n",
 						output,
 					)
 				},
@@ -345,7 +382,7 @@ func TestTerminalLineHandler(t *testing.T) {
 
 	t.Run("WithGroup", func(t *testing.T) {
 		buf := &bytes.Buffer{}
-		h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+		h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
 
 		// Empty group name should return same handler
 		h2 := h.WithGroup("")
@@ -361,7 +398,8 @@ func TestTerminalLineHandler(t *testing.T) {
 		output := buf.String()
 		assert.Equal(
 			t,
-			"INFO 🏷️ test: grouped message\n",
+			"🏷️ test\n"+
+				"  INFO grouped message\n",
 			output,
 		)
 	})
@@ -392,7 +430,7 @@ func TestTerminalLineHandler(t *testing.T) {
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
 				buf := &bytes.Buffer{} // buffer is not a TTY
-				h := NewTerminalLineHandler(buf, tt.opts)
+				h := NewTerminalTreeHandler(buf, tt.opts)
 
 				logger := slog.New(h)
 				logger.Error("test message")

@@ -4,12 +4,12 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert"
 	"github.com/fornellas/slogxpert/ansi"
+	"github.com/fornellas/slogxpert/log"
 )
 
 func main() {
-	customColors := &slogxpert.TerminalHandlerColorScheme{
+	customColors := &log.TerminalHandlerColorScheme{
 		GroupName:    ansi.SGRs{ansi.FgMagenta, ansi.Bold},
 		AttrKey:      ansi.SGRs{ansi.FgBlue},
 		AttrValue:    ansi.SGRs{ansi.FgWhite},
@@ -27,7 +27,7 @@ func main() {
 		Function:     ansi.SGRs{ansi.FgBlue, ansi.Dim},
 	}
 
-	handler := slogxpert.NewTerminalTreeHandler(os.Stdout, &slogxpert.TerminalHandlerOptions{
+	handler := log.NewTerminalTreeHandler(os.Stdout, &log.TerminalHandlerOptions{
 		ColorScheme: customColors,
 	})
 

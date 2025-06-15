@@ -438,6 +438,19 @@ endif
 endif
 
 ##
+## examples
+##
+
+.PHONY: examples
+examples: install-go
+	for e in examples/* ; do cd $$e && go run . && cd - ; done
+
+.PHONY: help-examples
+help-examples:
+	@echo 'examples: run all examples'
+help: help-examples
+
+##
 ## ci
 ##
 
@@ -448,7 +461,7 @@ help-ci:
 help: help-ci
 
 .PHONY: ci
-ci: lint test
+ci: lint test examples
 
 .PHONY: ci-dev
 ci-dev:

@@ -441,14 +441,19 @@ endif
 ## examples
 ##
 
-.PHONY: examples
-examples: install-go
-	for e in examples/* ; do cd $$e && go run . && cd - ; done
-
 .PHONY: help-examples
 help-examples:
 	@echo 'examples: run all examples'
 help: help-examples
+
+.PHONY: examples
+examples: install-go
+	for e in examples/* ; do cd $$e && go run . && cd - ; done
+
+.PHONY: clean-examples
+clean-examples:
+		rm -f examples/MultiHandler/application.log
+clean: clean-examples
 
 ##
 ## ci

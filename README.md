@@ -2,13 +2,11 @@
 
 # slogxpert
 
-This package extends Go's `log/slog`, providing handlers for structured colored console output, buffering and other goodies.
+This package extends Go's [log/slog](https://pkg.go.dev/log/slog), providing handlers for structured colored console output, buffering and other goodies.
 
-The full detailed documentation can be found [here](https://pkg.go.dev/github.com/fornellas/slogxpert), here are some highlights.
+The full detailed documentation can be found [here](https://pkg.go.dev/github.com/fornellas/slogxpert), and full executable examples can be found [here](https://github.com/fornellas/slogxpert/tree/main/examples).
 
-Full executable examples can be found [here](https://github.com/fornellas/slogxpert/tree/main/examples).
-
-Contributions are accepted, check [README.development.md](README.development.md) for instructions on how to run the build, and cut a PR with your changes.
+Contributions are accepted, check [README.development.md](README.development.md) for instructions on how to run the build and cut a PR with your changes.
 
 ## Handlers
 

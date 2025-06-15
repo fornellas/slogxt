@@ -9,10 +9,10 @@ import (
 
 	_ "github.com/spf13/pflag"
 
-	"github.com/fornellas/slogxpert"
+	"github.com/fornellas/slogxpert/log"
 )
 
-// LogHandlerValueOptions holds some options for [slogxpert.TerminalHandlerOptions].
+// LogHandlerValueOptions holds some options for [log.TerminalHandlerOptions].
 type LogHandlerValueOptions struct {
 	Level              slog.Level
 	AddSource          bool
@@ -26,7 +26,7 @@ var logHandlerNameFnMap = map[string]func(io.Writer, LogHandlerValueOptions) slo
 		if options.TerminalTime {
 			timeLayout = time.DateTime
 		}
-		return slogxpert.NewTerminalTreeHandler(writer, &slogxpert.TerminalHandlerOptions{
+		return log.NewTerminalTreeHandler(writer, &log.TerminalHandlerOptions{
 			HandlerOptions: slog.HandlerOptions{
 				Level:     options.Level,
 				AddSource: options.AddSource,
@@ -40,7 +40,7 @@ var logHandlerNameFnMap = map[string]func(io.Writer, LogHandlerValueOptions) slo
 		if options.TerminalTime {
 			timeLayout = time.DateTime
 		}
-		return slogxpert.NewTerminalLineHandler(writer, &slogxpert.TerminalHandlerOptions{
+		return log.NewTerminalLineHandler(writer, &log.TerminalHandlerOptions{
 			HandlerOptions: slog.HandlerOptions{
 				Level:     options.Level,
 				AddSource: options.AddSource,

@@ -4,11 +4,11 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert"
+	"github.com/fornellas/slogxpert/log"
 )
 
 func main() {
-	handler := slogxpert.NewTerminalTreeHandler(os.Stderr, &slogxpert.TerminalHandlerOptions{
+	handler := log.NewTerminalTreeHandler(os.Stderr, &log.TerminalHandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		},

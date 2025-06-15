@@ -9,7 +9,7 @@ import (
 
 	_ "github.com/spf13/pflag"
 
-	"github.com/fornellas/slogxpert/log"
+	"github.com/fornellas/slogxt/log"
 )
 
 // LogHandlerValueOptions holds some options for [log.TerminalHandlerOptions].

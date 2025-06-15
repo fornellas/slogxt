@@ -41,8 +41,8 @@ case "$(uname -s)" in
 		# Darwin runs containers as VMs, and mount volumes with the current user, so we use dummy
 		# values here, which are known to be good for the container, and which are mapped to the
 		# Darwin user on the volume.
-		DOCKER_USER=slogxpert
-		DOCKER_GROUP=slogxpert
+		DOCKER_USER=slogxt
+		DOCKER_GROUP=slogxt
 		# Darwin regular users UID/GID may also conflict with the container's, so we also use dummy
 		# values here.
 		DOCKER_UID=1000
@@ -84,9 +84,9 @@ case "${SYSTEM}" in
 		exit 1
 		;;
 esac
-mkdir -p "${XDG_CACHE_HOME}/slogxpert"
+mkdir -p "${XDG_CACHE_HOME}/slogxt"
 
-NAME="slogxpert-$$"
+NAME="slogxt-$$"
 
 function kill_container() {
 	docker kill --signal SIGKILL "${NAME}" &>/dev/null || true
@@ -116,10 +116,10 @@ docker run \
 	--rm \
 	${TTY} \
 	--interactive \
-	--volume "${GIT_ROOT}:${DOCKER_HOME}/slogxpert" \
-	--volume "${XDG_CACHE_HOME}/slogxpert:${DOCKER_XDG_CACHE_HOME}/slogxpert" \
+	--volume "${GIT_ROOT}:${DOCKER_HOME}/slogxt" \
+	--volume "${XDG_CACHE_HOME}/slogxt:${DOCKER_XDG_CACHE_HOME}/slogxt" \
 	--env "XDG_CACHE_HOME=${DOCKER_XDG_CACHE_HOME}" \
 	${GO_ENV_ARGS} \
-	--workdir ${DOCKER_HOME}/slogxpert \
+	--workdir ${DOCKER_HOME}/slogxt \
 	${DOCKER_IMAGE} \
 	make --no-print-directory "${@}"

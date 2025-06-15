@@ -4,8 +4,8 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert/ansi"
-	"github.com/fornellas/slogxpert/log"
+	"github.com/fornellas/slogxt/ansi"
+	"github.com/fornellas/slogxt/log"
 )
 
 func main() {

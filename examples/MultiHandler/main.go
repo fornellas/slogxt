@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert"
+	"github.com/fornellas/slogxpert/log"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 
 	// Create different handlers for different outputs
 	// 1. Terminal handler for human-readable console output
-	consoleHandler := slogxpert.NewTerminalTreeHandler(os.Stdout, &slogxpert.TerminalHandlerOptions{
+	consoleHandler := log.NewTerminalTreeHandler(os.Stdout, &log.TerminalHandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
 			Level: slog.LevelInfo, // Only INFO and above for console
 		},
@@ -25,7 +25,7 @@ func main() {
 	})
 
 	// 2. Line handler for file output
-	fileHandler := slogxpert.NewTerminalLineHandler(logFile, &slogxpert.TerminalHandlerOptions{
+	fileHandler := log.NewTerminalLineHandler(logFile, &log.TerminalHandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
 			Level: slog.LevelDebug, // All logs for file
 		},
@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// Combine all handlers into a MultiHandler
-	multiHandler := slogxpert.NewMultiHandler(
+	multiHandler := log.NewMultiHandler(
 		consoleHandler,
 		fileHandler,
 	)

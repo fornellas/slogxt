@@ -1,4 +1,4 @@
-package slogxpert
+package log
 
 import (
 	"bytes"

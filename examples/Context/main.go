@@ -5,11 +5,11 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert"
+	"github.com/fornellas/slogxpert/log"
 )
 
 func main() {
-	handler := slogxpert.NewTerminalLineHandler(os.Stderr, &slogxpert.TerminalHandlerOptions{
+	handler := log.NewTerminalLineHandler(os.Stderr, &log.TerminalHandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		},
@@ -20,7 +20,7 @@ func main() {
 	ctx := context.Background()
 
 	// Set given log to context
-	ctx = slogxpert.WithLogger(ctx, logger)
+	ctx = log.WithLogger(ctx, logger)
 
 	if !authenticateUser(ctx, "john", "bad password") {
 		logger.Error("Authentication failure")
@@ -28,14 +28,14 @@ func main() {
 }
 
 func authenticateUser(ctx context.Context, username, password string) bool {
-	ctx, logger := slogxpert.MustWithGroupAttrs(ctx, "login", "username", username)
+	ctx, logger := log.MustWithGroupAttrs(ctx, "login", "username", username)
 
 	logger.Info("User authentication")
 	return checkPassword(ctx, username, password)
 }
 
 func checkPassword(ctx context.Context, username, password string) bool {
-	logger := slogxpert.MustLogger(ctx)
+	logger := log.MustLogger(ctx)
 	logger.Debug("Checking user and password")
 	return username == "john" && password == "secret"
 }

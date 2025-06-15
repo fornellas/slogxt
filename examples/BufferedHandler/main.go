@@ -4,14 +4,14 @@ import (
 	"log/slog"
 	"os"
 
-	"github.com/fornellas/slogxpert"
+	"github.com/fornellas/slogxpert/log"
 )
 
 func main() {
-	baseHandler := slogxpert.NewTerminalTreeHandler(os.Stdout, &slogxpert.TerminalHandlerOptions{})
+	baseHandler := log.NewTerminalTreeHandler(os.Stdout, &log.TerminalHandlerOptions{})
 
 	// Create a buffered handler that wraps the base handler
-	bufferedHandler := slogxpert.NewBufferedHandler(baseHandler)
+	bufferedHandler := log.NewBufferedHandler(baseHandler)
 
 	logger := slog.New(bufferedHandler)
 

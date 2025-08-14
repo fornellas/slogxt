@@ -92,7 +92,15 @@ func (aw *terminalLineHandlerAttrWriter) writeAttr(
 			return nt + n, err
 		}
 
-		if n, err = aw.colorScheme.AttrValue.Fprintf(w, "%s", escape(attr.Value.String())); err != nil {
+		var valueStr string
+		if tv, ok := attr.Value.Any().(TerminalValuer); ok {
+			terminalValue := tv.TerminalValue()
+			valueStr = sanitizeANSI(terminalValue.String())
+		} else {
+			valueStr = escape(attr.Value.String())
+		}
+
+		if n, err = aw.colorScheme.AttrValue.Fprintf(w, "%s", valueStr); err != nil {
 			return nt + n, err
 		}
 		nt += n

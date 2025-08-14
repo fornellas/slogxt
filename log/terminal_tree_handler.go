@@ -175,24 +175,45 @@ func (h *TerminalTreeHandler) writeAttrNonGroupValue(w io.Writer, indent int, at
 	if _, err := h.opts.ColorScheme.AttrKey.Fprintf(w, "%s:", escape(attr.Key)); err != nil {
 		return err
 	}
-	valueStr := attr.Value.String()
-	if len(valueStr) > 0 && bytes.ContainsRune([]byte(valueStr), '\n') {
+
+	var valueStr string
+	var useANSI bool
+	if tv, ok := attr.Value.Any().(TerminalValuer); ok {
+		terminalValue := tv.TerminalValue()
+		valueStr = terminalValue.String()
+		useANSI = true
+	} else {
+		valueStr = attr.Value.String()
+		useANSI = false
+	}
+
+	if len(valueStr) > 0 && strings.Contains(valueStr, "\n") {
 		var fnErr error
-		strings.SplitSeq(valueStr, "\n")(func(line string) bool {
+		for line := range strings.SplitSeq(valueStr, "\n") {
 			if _, fnErr = fmt.Fprintf(w, "\n  %s", indentStr); fnErr != nil {
-				return false
+				return fnErr
 			}
-			_, fnErr = h.opts.ColorScheme.AttrValue.Fprintf(w, "%s", escape(line))
-			return fnErr == nil
-		})
-		if fnErr != nil {
-			return fnErr
+			var processedLine string
+			if useANSI {
+				processedLine = sanitizeANSI(line)
+			} else {
+				processedLine = escape(line)
+			}
+			if _, fnErr = h.opts.ColorScheme.AttrValue.Fprintf(w, "%s", processedLine); fnErr != nil {
+				return fnErr
+			}
 		}
 		if _, err := w.Write([]byte("\n")); err != nil {
 			return err
 		}
 	} else {
-		if _, err := h.opts.ColorScheme.AttrValue.Fprintf(w, " %s", escape(valueStr)); err != nil {
+		var processedValue string
+		if useANSI {
+			processedValue = sanitizeANSI(valueStr)
+		} else {
+			processedValue = escape(valueStr)
+		}
+		if _, err := h.opts.ColorScheme.AttrValue.Fprintf(w, " %s", processedValue); err != nil {
 			return err
 		}
 		if _, err := fmt.Fprintf(w, "\n"); err != nil {

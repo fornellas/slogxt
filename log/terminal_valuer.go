@@ -11,18 +11,6 @@ import (
 // IMPORTANT: Only use Select Graphic Rendition (SGR) escape sequences
 // for colors and text formatting. Other ANSI control sequences (cursor
 // movement, screen clearing, etc.) will disrupt terminal output.
-//
-// Safe SGR sequences include:
-//   - \033[0m (reset)
-//   - \033[1m (bold), \033[2m (dim), etc. (text formatting)
-//   - \033[30-37m (foreground colors)
-//   - \033[40-47m (background colors)
-//   - \033[90-97m (bright foreground colors)
-//   - \033[100-107m (bright background colors)
-//
-// Example:
-//
-//	value := NewTerminalValue("\033[31mError\033[0m") // Red "Error"
 type TerminalValuer interface {
 	// TerminalValue returns a slog.Value that should only contain
 	// Select Graphic Rendition (SGR) ANSI escape sequences.
@@ -41,9 +29,6 @@ func stripANSI(s string) string {
 // It automatically provides different representations for terminal vs. other handlers:
 // - String() and MarshalText() return the text with all ANSI sequences removed
 // - TerminalValue() returns the original text with ANSI sequences for terminal handlers
-//
-// Only use Select Graphic Rendition (SGR) sequences for colors and formatting.
-// Other ANSI control sequences will disrupt terminal output.
 type TerminalValue struct {
 	text string
 }
@@ -51,9 +36,9 @@ type TerminalValue struct {
 // NewTerminalValue creates a new TerminalValue from a string that may contain
 // Select Graphic Rendition (SGR) ANSI sequences.
 //
-// IMPORTANT: Only use SGR sequences for colors and formatting. Other ANSI
-// control sequences (cursor movement, screen clearing, etc.) will disrupt
-// terminal display.
+// IMPORTANT: Only use Select Graphic Rendition (SGR) escape sequences
+// for colors and text formatting. Other ANSI control sequences (cursor
+// movement, screen clearing, etc.) will disrupt terminal output.
 func NewTerminalValue(text string) TerminalValue {
 	return TerminalValue{text: text}
 }

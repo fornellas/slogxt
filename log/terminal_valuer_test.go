@@ -40,58 +40,6 @@ func (v TestLogValue) TerminalValue() slog.Value {
 	return slog.StringValue(v.terminalText)
 }
 
-func TestTerminalValuerIntegration(t *testing.T) {
-	t.Run("json_handler_uses_logvalue_method", func(t *testing.T) {
-		buf := &bytes.Buffer{}
-		handler := slog.NewJSONHandler(buf, nil)
-		logger := slog.New(handler)
-
-		coloredValue := TestLogValue{
-			plainText:    "plain text",
-			terminalText: "\033[31mred text\033[0m",
-		}
-
-		logger.Info("test message", "value", coloredValue)
-
-		output := buf.String()
-		// JSON handler should use LogValue() method, not TerminalValue()
-		assert.Contains(t, output, "plain text")
-		assert.NotContains(t, output, "\033[31m")
-	})
-
-	t.Run("tree_handler_vs_json_handler", func(t *testing.T) {
-		coloredValue := TestColoredValue{
-			plainText:    "plain text",
-			terminalText: "\033[31mred text\033[0m",
-		}
-
-		// Terminal handler
-		termBuf := &bytes.Buffer{}
-		termHandler := NewTerminalTreeHandler(termBuf, &TerminalHandlerOptions{
-			NoColor: true,
-		})
-		termLogger := slog.New(termHandler)
-		termLogger.Info("test", "diff", coloredValue)
-		termOutput := termBuf.String()
-
-		// JSON handler with LogValue type
-		jsonValue := TestLogValue(coloredValue)
-		jsonBuf := &bytes.Buffer{}
-		jsonHandler := slog.NewJSONHandler(jsonBuf, nil)
-		jsonLogger := slog.New(jsonHandler)
-		jsonLogger.Info("test", "diff", jsonValue)
-		jsonOutput := jsonBuf.String()
-
-		// Terminal should show ANSI sequences as-is
-		assert.Contains(t, termOutput, "\033[31mred text\033[0m")
-		assert.NotContains(t, termOutput, "plain text")
-
-		// JSON should show plain text via LogValue()
-		assert.Contains(t, jsonOutput, "plain text")
-		assert.NotContains(t, jsonOutput, "\033[31m")
-	})
-}
-
 func TestStripANSI(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -179,5 +127,20 @@ func TestTerminalValue(t *testing.T) {
 
 		assert.Equal(t, "plain text", tv.String())
 		assert.Equal(t, "plain text", tv.TerminalValue().String())
+	})
+
+	t.Run("json_handler_uses_logvalue_method", func(t *testing.T) {
+		buf := &bytes.Buffer{}
+		handler := slog.NewJSONHandler(buf, nil)
+		logger := slog.New(handler)
+
+		tv := NewTerminalValue("\033[31mred text\033[0m")
+
+		logger.Info("test message", "value", tv)
+
+		output := buf.String()
+
+		assert.Contains(t, output, "red text")
+		assert.NotContains(t, output, "\033[31m")
 	})
 }

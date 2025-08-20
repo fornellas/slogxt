@@ -403,4 +403,50 @@ func TestTerminalLineHandler(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("TerminalValuer", func(t *testing.T) {
+		tests := []struct {
+			name     string
+			expected string
+			logFn    func(*slog.Logger)
+		}{
+			{
+				name:     "terminal_valuer_with_colors",
+				expected: "[value: \033[31mred text\033[0m]",
+				logFn: func(logger *slog.Logger) {
+					cv := TestColoredValue{
+						plainText:    "plain text",
+						terminalText: "\033[31mred text\033[0m",
+					}
+					logger.Info("test message", "value", cv)
+				},
+			},
+			{
+				name:     "terminal_valuer_with_all_sequences",
+				expected: "[value: \033[2J\033[31mred\033[H\033[0m]",
+				logFn: func(logger *slog.Logger) {
+					cv := TestColoredValue{
+						plainText:    "plain text",
+						terminalText: "\033[2J\033[31mred\033[H\033[0m",
+					}
+					logger.Info("test message", "value", cv)
+				},
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				buf := &bytes.Buffer{}
+				handler := NewTerminalLineHandler(buf, &TerminalHandlerOptions{
+					NoColor: true,
+				})
+				logger := slog.New(handler)
+
+				tt.logFn(logger)
+
+				output := buf.String()
+				assert.Contains(t, output, tt.expected)
+			})
+		}
+	})
 }

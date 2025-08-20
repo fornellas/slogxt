@@ -377,6 +377,82 @@ $`, output)
 				tt.logFunc(logger)
 				tt.check(t, buf.String())
 			})
+
+			t.Run("TerminalValuer", func(t *testing.T) {
+				tests := []struct {
+					name string
+
+					value    any
+					expected string
+					logFn    func(*slog.Logger)
+				}{
+					{
+						name: "terminal_valuer_with_colors",
+						value: TestColoredValue{
+							plainText:    "plain text",
+							terminalText: "\033[31mred text\033[0m",
+						},
+						expected: "  value: \033[31mred text\033[0m\n",
+						logFn: func(logger *slog.Logger) {
+							logger.Info("test message", "value", TestColoredValue{
+								plainText:    "plain text",
+								terminalText: "\033[31mred text\033[0m",
+							})
+						},
+					},
+					{
+						name: "terminal_valuer_with_all_sequences",
+						value: TestColoredValue{
+							plainText:    "plain text",
+							terminalText: "\033[2J\033[31mred\033[H\033[0m",
+						},
+						expected: "  value: \033[2J\033[31mred\033[H\033[0m\n",
+						logFn: func(logger *slog.Logger) {
+							logger.Info("test message", "value", TestColoredValue{
+								plainText:    "plain text",
+								terminalText: "\033[2J\033[31mred\033[H\033[0m",
+							})
+						},
+					},
+					{
+						name: "terminal_valuer_multiline",
+						value: TestColoredValue{
+							plainText:    "line1\nline2",
+							terminalText: "\033[31mline1\033[0m\n\033[32mline2\033[0m",
+						},
+						expected: "  value:\n    \033[31mline1\033[0m\n    \033[32mline2\033[0m\n",
+						logFn: func(logger *slog.Logger) {
+							logger.Info("test message", "value", TestColoredValue{
+								plainText:    "line1\nline2",
+								terminalText: "\033[31mline1\033[0m\n\033[32mline2\033[0m",
+							})
+						},
+					},
+					{
+						name:     "regular_value_still_escaped",
+						value:    "regular\x00text",
+						expected: "  value: regular\\x00text\n",
+						logFn: func(logger *slog.Logger) {
+							logger.Info("test message", "value", "regular\x00text")
+						},
+					},
+				}
+
+				for _, tt := range tests {
+					t.Run(tt.name, func(t *testing.T) {
+						buf := &bytes.Buffer{}
+						handler := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{
+							NoColor: true,
+						})
+						logger := slog.New(handler)
+
+						tt.logFn(logger)
+
+						output := buf.String()
+						assert.Contains(t, output, tt.expected)
+					})
+				}
+			})
 		}
 	})
 

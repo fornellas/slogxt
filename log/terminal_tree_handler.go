@@ -195,7 +195,7 @@ func (h *TerminalTreeHandler) writeAttrNonGroupValue(w io.Writer, indent int, at
 			}
 			var processedLine string
 			if useANSI {
-				processedLine = sanitizeANSI(line)
+				processedLine = line
 			} else {
 				processedLine = escape(line)
 			}
@@ -209,7 +209,7 @@ func (h *TerminalTreeHandler) writeAttrNonGroupValue(w io.Writer, indent int, at
 	} else {
 		var processedValue string
 		if useANSI {
-			processedValue = sanitizeANSI(valueStr)
+			processedValue = valueStr
 		} else {
 			processedValue = escape(valueStr)
 		}

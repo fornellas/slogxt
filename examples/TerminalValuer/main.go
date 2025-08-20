@@ -13,10 +13,6 @@ func main() {
 
 	// Create sample colored values using TerminalValue
 	diff := log.NewTerminalValue("\033[31m-old line\033[0m\n\033[32m+new line\033[0m")
-
-	// This contains unsafe ANSI sequences that will be filtered
-	unsafeDiff := log.NewTerminalValue("\033[2J\033[31mred text\033[H\033[0m")
-
 	status := log.NewTerminalValue("\033[32m✓\033[0m Operation completed successfully")
 
 	// Demo 1: TerminalTreeHandler shows ANSI colors
@@ -28,7 +24,6 @@ func main() {
 
 	termLogger.Info("File changes applied", "diff", diff)
 	termLogger.Info("Status update", "status", status)
-	termLogger.Info("Unsafe ANSI filtered", "diff", unsafeDiff)
 
 	// Demo 2: JSON Handler shows plain text
 	slog.Info("\n2. JSON Handler (plain text):")
@@ -38,7 +33,6 @@ func main() {
 
 	jsonLogger.Info("File changes applied", "diff", diff)
 	jsonLogger.Info("Status update", "status", status)
-	jsonLogger.Info("Unsafe ANSI filtered", "diff", unsafeDiff)
 
 	slog.Info("JSON Output:")
 	os.Stdout.WriteString(jsonBuf.String())

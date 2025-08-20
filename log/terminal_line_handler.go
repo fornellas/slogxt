@@ -95,7 +95,7 @@ func (aw *terminalLineHandlerAttrWriter) writeAttr(
 		var valueStr string
 		if tv, ok := attr.Value.Any().(TerminalValuer); ok {
 			terminalValue := tv.TerminalValue()
-			valueStr = sanitizeANSI(terminalValue.String())
+			valueStr = terminalValue.String()
 		} else {
 			valueStr = escape(attr.Value.String())
 		}

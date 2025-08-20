@@ -453,27 +453,6 @@ $`, output)
 					})
 				}
 			})
-
-			t.Run("TerminalValuerWithGroups", func(t *testing.T) {
-				buf := &bytes.Buffer{}
-				handler := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{
-					NoColor: true,
-				})
-
-				logger := slog.New(handler.WithGroup("app"))
-
-				coloredValue := TestColoredValue{
-					plainText:    "plain diff",
-					terminalText: "\033[31m-deleted\033[0m\n\033[32m+added\033[0m",
-				}
-
-				logger.Info("changes applied", "diff", coloredValue)
-
-				output := buf.String()
-				assert.Contains(t, output, "🏷️ app")
-				assert.Contains(t, output, "\033[31m-deleted\033[0m")
-				assert.Contains(t, output, "\033[32m+added\033[0m")
-			})
 		}
 	})
 

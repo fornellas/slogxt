@@ -13,8 +13,9 @@ import (
 )
 
 type terminalLineHandlerAttrWriter struct {
-	colorScheme *TerminalHandlerColorScheme
-	replaceAttr func(groups []string, a slog.Attr) slog.Attr
+	disableGroupEmoji bool
+	colorScheme       *TerminalHandlerColorScheme
+	replaceAttr       func(groups []string, a slog.Attr) slog.Attr
 }
 
 func (aw *terminalLineHandlerAttrWriter) writeAttrGroupValue(
@@ -39,11 +40,12 @@ func (aw *terminalLineHandlerAttrWriter) writeAttrGroupValue(
 		}
 	} else {
 		ga := &groupAttrs{
-			ColorScheme: aw.colorScheme,
-			ReplaceAttr: aw.replaceAttr,
-			Group:       attr.Key,
-			Groups:      append(groups, attr.Key),
-			Attrs:       attrs,
+			DisableGroupEmoji: aw.disableGroupEmoji,
+			ColorScheme:       aw.colorScheme,
+			ReplaceAttr:       aw.replaceAttr,
+			Group:             attr.Key,
+			Groups:            append(groups, attr.Key),
+			Attrs:             attrs,
 		}
 
 		if n, err = ga.write(w); err != nil {
@@ -149,11 +151,12 @@ func (aw *terminalLineHandlerAttrWriter) writeAttrs(
 }
 
 type groupAttrs struct {
-	ColorScheme *TerminalHandlerColorScheme
-	ReplaceAttr func(groups []string, a slog.Attr) slog.Attr
-	Group       string
-	Groups      []string
-	Attrs       []slog.Attr
+	DisableGroupEmoji bool
+	ColorScheme       *TerminalHandlerColorScheme
+	ReplaceAttr       func(groups []string, a slog.Attr) slog.Attr
+	Group             string
+	Groups            []string
+	Attrs             []slog.Attr
 }
 
 func (ga *groupAttrs) write(w io.Writer) (int, error) {
@@ -161,7 +164,7 @@ func (ga *groupAttrs) write(w io.Writer) (int, error) {
 	var err error
 
 	if len(ga.Group) > 0 {
-		if n, err = writeGroup(w, ga.ColorScheme, ga.Group); err != nil {
+		if n, err = writeGroup(w, ga.DisableGroupEmoji, ga.ColorScheme, ga.Group); err != nil {
 			return n, err
 		}
 		nt += n
@@ -176,8 +179,9 @@ func (ga *groupAttrs) write(w io.Writer) (int, error) {
 		}
 
 		attrWriter := &terminalLineHandlerAttrWriter{
-			colorScheme: ga.ColorScheme,
-			replaceAttr: ga.ReplaceAttr,
+			disableGroupEmoji: ga.DisableGroupEmoji,
+			colorScheme:       ga.ColorScheme,
+			replaceAttr:       ga.ReplaceAttr,
 		}
 		if n, err = attrWriter.writeAttrs(
 			w,
@@ -240,8 +244,9 @@ func NewTerminalLineHandler(w io.Writer, opts *TerminalHandlerOptions) *Terminal
 		writerMutex: &sync.Mutex{},
 		groupAttrs: []groupAttrs{
 			groupAttrs{
-				ColorScheme: optsValue.ColorScheme,
-				ReplaceAttr: optsValue.ReplaceAttr,
+				DisableGroupEmoji: optsValue.DisableGroupEmoji,
+				ColorScheme:       optsValue.ColorScheme,
+				ReplaceAttr:       optsValue.ReplaceAttr,
 			},
 		},
 	}
@@ -326,8 +331,9 @@ func (h *TerminalLineHandler) Handle(ctx context.Context, record slog.Record) er
 		})
 
 		attrWriter := &terminalLineHandlerAttrWriter{
-			colorScheme: h.opts.ColorScheme,
-			replaceAttr: h.opts.ReplaceAttr,
+			disableGroupEmoji: h.opts.DisableGroupEmoji,
+			colorScheme:       h.opts.ColorScheme,
+			replaceAttr:       h.opts.ReplaceAttr,
 		}
 		if _, err := attrWriter.writeAttrs(
 			&buff,
@@ -384,10 +390,11 @@ func (h *TerminalLineHandler) WithGroup(name string) slog.Handler {
 		lastGroupAttrs.Group = name
 	} else {
 		h2.groupAttrs = append(h2.groupAttrs, groupAttrs{
-			ColorScheme: h2.opts.ColorScheme,
-			ReplaceAttr: h2.opts.ReplaceAttr,
-			Group:       name,
-			Groups:      append(h2.groups(), name),
+			DisableGroupEmoji: h2.opts.DisableGroupEmoji,
+			ColorScheme:       h2.opts.ColorScheme,
+			ReplaceAttr:       h2.opts.ReplaceAttr,
+			Group:             name,
+			Groups:            append(h2.groups(), name),
 		})
 	}
 

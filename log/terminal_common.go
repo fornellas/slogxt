@@ -53,6 +53,9 @@ var DefaultTerminalHandlerColorScheme = &TerminalHandlerColorScheme{
 // TerminalHandlerOptions extends HandlerOptions with specific options.
 type TerminalHandlerOptions struct {
 	slog.HandlerOptions
+	// Disable adding an emoji before group names when the group name does not start with an
+	// emoji code point (see [unicode.IsEmojiStartCodePoint]).
+	DisableGroupEmoji bool
 	// Time layout for timestamps; if empty, time is not included in output.
 	TimeLayout string
 	// If true, force ANSI escape sequences for color, even when no TTY detected.
@@ -153,22 +156,22 @@ func writePC(
 
 func writeGroup(
 	w io.Writer,
+	disableGroupEmoji bool,
 	colorScheme *TerminalHandlerColorScheme,
 	name string,
 ) (int, error) {
-	emoji := ""
-	r, _ := utf8.DecodeRuneInString(name)
-	if !unicode.IsEmojiStartCodePoint(r) {
-		emoji = "🏷️ "
-	}
-
 	var n, nt int
 	var err error
 
-	if n, err = fmt.Fprintf(w, "%s", emoji); err != nil {
-		return n, err
+	if !disableGroupEmoji {
+		r, _ := utf8.DecodeRuneInString(name)
+		if !unicode.IsEmojiStartCodePoint(r) {
+			if n, err = fmt.Fprint(w, "🏷️ "); err != nil {
+				return n, err
+			}
+			nt += n
+		}
 	}
-	nt += n
 
 	if n, err = colorScheme.GroupName.Fprintf(w, "%s", escape(name)); err != nil {
 		return nt + n, err

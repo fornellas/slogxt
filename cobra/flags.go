@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Default value for [github.com/fornellas/slogxt/log.TerminalHandlerOptions]'s DisableGroupEmoji,
+// used by [GetLogger].
+var DefaultTerminalHandlerOptionsDisableGroupEmoji bool
+
 var logLevelValue = NewLogLevelValue()
 
 var logHandlerValue = NewLogHandlerValue()
@@ -46,10 +50,12 @@ func AddLoggerFlags(cmd *cobra.Command) {
 }
 
 // GetLogger returns a [slog.Logger] crafted as a function of the Cobra command flags from [AddLoggerFlags].
+// See [DefaultTerminalHandlerOptionsDisableGroupEmoji].
 func GetLogger(writer io.Writer) *slog.Logger {
 	handler := logHandlerValue.GetHandler(
 		writer,
 		LogHandlerValueOptions{
+			DisableGroupEmoji:  DefaultTerminalHandlerOptionsDisableGroupEmoji,
 			Level:              logLevelValue.Level(),
 			AddSource:          logHandlerAddSource,
 			TerminalTime:       logHandlerTerminalTime,

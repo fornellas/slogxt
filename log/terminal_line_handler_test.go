@@ -344,26 +344,53 @@ func TestTerminalLineHandler(t *testing.T) {
 	})
 
 	t.Run("WithGroup", func(t *testing.T) {
-		buf := &bytes.Buffer{}
-		h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
+		t.Run("Default", func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{NoColor: true})
 
-		// Empty group name should return same handler
-		h2 := h.WithGroup("")
-		require.Same(t, h, h2)
+			// Empty group name should return same handler
+			h2 := h.WithGroup("")
+			require.Same(t, h, h2)
 
-		// Non-empty group should return new handler
-		h3 := h.WithGroup("test")
-		require.NotSame(t, h, h3)
+			// Non-empty group should return new handler
+			h3 := h.WithGroup("test")
+			require.NotSame(t, h, h3)
 
-		logger := slog.New(h3)
-		logger.Info("grouped message")
+			logger := slog.New(h3)
+			logger.Info("grouped message")
 
-		output := buf.String()
-		assert.Equal(
-			t,
-			"INFO 🏷️ test: grouped message\n",
-			output,
-		)
+			output := buf.String()
+			assert.Equal(
+				t,
+				"INFO 🏷️ test: grouped message\n",
+				output,
+			)
+		})
+		t.Run("DisableGroupEmoji", func(t *testing.T) {
+			buf := &bytes.Buffer{}
+			h := NewTerminalLineHandler(buf, &TerminalHandlerOptions{
+				DisableGroupEmoji: true,
+				NoColor:           true,
+			})
+
+			noEmojiGroupHandler := h.WithGroup("no emoji group")
+			require.NotSame(t, h, noEmojiGroupHandler)
+
+			logger := slog.New(noEmojiGroupHandler)
+			logger.Info("message")
+
+			emojiGroupLogger := logger.WithGroup("✅ emoji group")
+
+			emojiGroupLogger.Info("message")
+
+			output := buf.String()
+			assert.Equal(
+				t,
+				"INFO no emoji group: message\n"+
+					"INFO no emoji group > ✅ emoji group: message\n",
+				output,
+			)
+		})
 	})
 
 	t.Run("ColorDetection", func(t *testing.T) {

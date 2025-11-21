@@ -14,6 +14,7 @@ import (
 
 // LogHandlerValueOptions holds some options for [log.TerminalHandlerOptions].
 type LogHandlerValueOptions struct {
+	DisableGroupEmoji  bool
 	Level              slog.Level
 	AddSource          bool
 	TerminalTime       bool
@@ -31,8 +32,9 @@ var logHandlerNameFnMap = map[string]func(io.Writer, LogHandlerValueOptions) slo
 				Level:     options.Level,
 				AddSource: options.AddSource,
 			},
-			TimeLayout: timeLayout,
-			ForceColor: options.TerminalForceColor,
+			DisableGroupEmoji: options.DisableGroupEmoji,
+			TimeLayout:        timeLayout,
+			ForceColor:        options.TerminalForceColor,
 		})
 	},
 	"terminal-line": func(writer io.Writer, options LogHandlerValueOptions) slog.Handler {
@@ -45,8 +47,9 @@ var logHandlerNameFnMap = map[string]func(io.Writer, LogHandlerValueOptions) slo
 				Level:     options.Level,
 				AddSource: options.AddSource,
 			},
-			TimeLayout: timeLayout,
-			ForceColor: options.TerminalForceColor,
+			DisableGroupEmoji: options.DisableGroupEmoji,
+			TimeLayout:        timeLayout,
+			ForceColor:        options.TerminalForceColor,
 		})
 	},
 	"json": func(writer io.Writer, options LogHandlerValueOptions) slog.Handler {

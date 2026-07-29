@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM ubuntu:26.04
 RUN apt-get update && apt-get -y --no-install-recommends install \
     curl \
     build-essential \

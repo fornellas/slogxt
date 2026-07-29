@@ -23,14 +23,14 @@ jobs:
     steps:
       # Checkout
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       # Make
       - name: Setup Make
         run: brew install make
         shell: bash
       # Cache restore
       - name: Cache restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.XDG_CACHE_HOME }}
           key: darwin-${{ inputs.GOARCH }}-${{ hashFiles('**/go.sum', '**/*.go') }}
@@ -55,18 +55,19 @@ jobs:
         shell: bash
       # Cache save
       - name: Cache save
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.XDG_CACHE_HOME }}
           key: darwin-${{ inputs.GOARCH }}-${{ hashFiles('**/go.sum', '**/*.go') }}
       # Coveralls
       - name: Coveralls
-        uses: coverallsapp/github-action@v2.3.4
+        uses: coverallsapp/github-action@v2
         with:
           file: cover.lcov
           flag-name: darwin.${{ inputs.GOARCH }}
           parallel: true
           allow-empty: true
+          coverage-reporter-platform: ${{ inputs.GOARCH == '386' || inputs.GOARCH == 'amd64' && 'x86_64' || inputs.GOARCH == 'arm64' && 'arm64' }}
       # Clean
       - name: Clean
         run: gmake clean

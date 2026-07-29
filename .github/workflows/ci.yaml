@@ -9,13 +9,6 @@ on:
     tags:
       - "v*"
 jobs:
-  linux_386:
-    uses: ./.github/workflows/build-linux.yaml
-    with:
-      upload-artifact: ${{ startsWith(github.ref, 'refs/tags/') }}
-      GOARCH: 386
-      runs-on: ubuntu-26.04
-    secrets: inherit
   linux_amd64:
     uses: ./.github/workflows/build-linux.yaml
     with:
@@ -51,7 +44,6 @@ jobs:
     permissions:
       contents: write
     needs:
-      - linux_386
       - linux_amd64
       - linux_arm64
       - darwin_amd64
@@ -65,7 +57,6 @@ jobs:
         shell: bash
   coveralls:
     needs:
-      - linux_386
       - linux_amd64
       - linux_arm64
       - darwin_amd64

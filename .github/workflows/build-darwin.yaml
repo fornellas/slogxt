@@ -67,7 +67,7 @@ jobs:
           flag-name: darwin.${{ inputs.GOARCH }}
           parallel: true
           allow-empty: true
-          coverage-reporter-platform: ${{ inputs.GOARCH == '386' || inputs.GOARCH == 'amd64' && 'x86_64' || inputs.GOARCH == 'arm64' && 'arm64' }}
+          coverage-reporter-platform: ${{ inputs.GOARCH == 'amd64' && 'x86_64' || inputs.GOARCH == 'arm64' && 'arm64' }}
       # Clean
       - name: Clean
         run: gmake clean

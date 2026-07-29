@@ -27,7 +27,7 @@ jobs:
       GOOS: linux
       GOARCH: ${{ inputs.GOARCH }}
       XDG_CACHE_HOME: /tmp/XDG_CACHE_HOME
-      DOCKER_PLATFORM: linux/${{ inputs.GOARCH }}
+      DOCKER_PLATFORM: linux/${{ inputs.GOARCH == '386' && 'amd64' || inputs.GOARCH }}
       GO_TEST_BINARY_FLAGS_EXTRA: -v
     steps:
       # Checkout

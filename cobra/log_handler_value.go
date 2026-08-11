@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"sort"
 	"strings"
 	"time"
 
@@ -60,13 +61,6 @@ var logHandlerNameFnMap = map[string]func(io.Writer, LogHandlerValueOptions) slo
 	},
 }
 
-func logHandlerNames() (names []string) {
-	for name := range logHandlerNameFnMap {
-		names = append(names, name)
-	}
-	return names
-}
-
 var DefaultLogHandlerValue = "terminal-tree"
 
 // LogHandlerValue implements [pflag.Value] interface for a [slog.Handler].
@@ -97,7 +91,12 @@ func (h *LogHandlerValue) Reset() {
 }
 
 func (h *LogHandlerValue) Type() string {
-	return fmt.Sprintf("[%s]", strings.Join(logHandlerNames(), "|"))
+	names := []string{}
+	for name := range logHandlerNameFnMap {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return fmt.Sprintf("[%s]", strings.Join(names, "|"))
 }
 
 func (h *LogHandlerValue) GetHandler(

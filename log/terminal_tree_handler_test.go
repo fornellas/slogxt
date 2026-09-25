@@ -340,6 +340,78 @@ $`, output)
 				},
 			},
 			{
+				// Attr values can be uncomparable types (eg: a map, such as http.Header). This
+				// confirms that a repeated group with a changing uncomparable attr value
+				// doesn't panic, and that the differing content is still printed for both
+				// entries.
+				name: "repeated_group_uncomparable_attr_value_different",
+				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					return slog.New(h)
+				},
+				logFunc: func(logger *slog.Logger) {
+					h := logger.Handler().(*TerminalTreeHandler)
+
+					logger1 := slog.New(h.WithGroup("request").WithAttrs([]slog.Attr{
+						slog.Any("headers", map[string][]string{"X-Iteration": {"0"}}),
+					}))
+					logger1.Info("first")
+
+					logger2 := slog.New(h.WithGroup("request").WithAttrs([]slog.Attr{
+						slog.Any("headers", map[string][]string{"X-Iteration": {"1"}}),
+					}))
+					logger2.Info("second")
+				},
+				check: func(t *testing.T, output string) {
+					// Values differ, so the attr is printed again for the second message.
+					assert.Equal(
+						t,
+						"🏷️ request\n"+
+							"  headers: map[X-Iteration:[0]]\n"+
+							"  INFO first\n"+
+							"  headers: map[X-Iteration:[1]]\n"+
+							"  INFO second\n",
+						output,
+					)
+				},
+			},
+			{
+				// Attr values can be uncomparable types (eg: a map, such as http.Header). This
+				// confirms that a repeated group with an unchanged uncomparable attr value
+				// (equal content, distinct instances) is deduped like any other repeated attr,
+				// not merely printed again to avoid a panic.
+				name: "repeated_group_uncomparable_attr_value_equal",
+				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
+					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{NoColor: true})
+					return slog.New(h)
+				},
+				logFunc: func(logger *slog.Logger) {
+					h := logger.Handler().(*TerminalTreeHandler)
+
+					logger1 := slog.New(h.WithGroup("request").WithAttrs([]slog.Attr{
+						slog.Any("headers", map[string][]string{"X-Iteration": {"0"}}),
+					}))
+					logger1.Info("first")
+
+					logger2 := slog.New(h.WithGroup("request").WithAttrs([]slog.Attr{
+						slog.Any("headers", map[string][]string{"X-Iteration": {"0"}}),
+					}))
+					logger2.Info("second")
+				},
+				check: func(t *testing.T, output string) {
+					// Same content (distinct map instances), so the attr is deduped and only
+					// printed once.
+					assert.Equal(
+						t,
+						"🏷️ request\n"+
+							"  headers: map[X-Iteration:[0]]\n"+
+							"  INFO first\n"+
+							"  INFO second\n",
+						output,
+					)
+				},
+			},
+			{
 				name: "replace_attr",
 				setupLogger: func(buf *bytes.Buffer) *slog.Logger {
 					h := NewTerminalTreeHandler(buf, &TerminalHandlerOptions{

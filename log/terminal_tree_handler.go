@@ -65,6 +65,7 @@ type TerminalTreeHandler struct {
 	writerMutex      *sync.Mutex
 	groups           []string
 	attrs            []slog.Attr
+	renderedAttrs    func() []string
 	handlerChain     []*TerminalTreeHandler
 	currHandlerChain *currHandlerChain
 }
@@ -95,10 +96,28 @@ func NewTerminalTreeHandler(w io.Writer, opts *TerminalHandlerOptions) *Terminal
 		writerMutex:      &sync.Mutex{},
 		groups:           []string{},
 		attrs:            []slog.Attr{},
+		renderedAttrs:    func() []string { return nil },
 		currHandlerChain: newCurrHandlerChain(),
 	}
 	h.handlerChain = []*TerminalTreeHandler{h}
 	return h
+}
+
+// write handler group & attrs, as a function of the current handler at the chain, preventing
+// duplicate attrs
+func (h *TerminalTreeHandler) writeHandlerGroupAttrs(writer io.Writer, ch *TerminalTreeHandler) error {
+	sameGroups := ch != nil && h.sameGroups(ch)
+
+	if sameGroups {
+		return h.writeRenderedAttrs(writer, h.changedRenderedAttrs(h.renderedAttrs(), ch.renderedAttrs()))
+	}
+
+	if len(h.groups) > 0 {
+		if err := h.writeGroupHeader(writer, len(h.groups)-1, h.groups[len(h.groups)-1]); err != nil {
+			return err
+		}
+	}
+	return h.writeRenderedAttrs(writer, h.renderedAttrs())
 }
 
 // Enabled implements slog.Handler.Enabled
@@ -118,10 +137,39 @@ func (h *TerminalTreeHandler) clone() *TerminalTreeHandler {
 	return &h2
 }
 
+// renderAttrs returns one rendered string per entry of parentRendered, followed by one rendered
+// string per entry of attrs, each rendered exactly as it would be written to a log line at this
+// handler's group depth.
+func (h *TerminalTreeHandler) renderAttrs(parentRendered []string, attrs []slog.Attr) []string {
+	var buf bytes.Buffer
+	starts := make([]int, len(parentRendered)+len(attrs)+1)
+
+	for i, r := range parentRendered {
+		buf.WriteString(r)
+		starts[i+1] = buf.Len()
+	}
+	for i, attr := range attrs {
+		// buf is a bytes.Buffer: all its Write* methods (and everything writeAttr calls on it)
+		// always return a nil error.
+		_ = h.writeAttr(&buf, len(h.groups), attr)
+		starts[len(parentRendered)+i+1] = buf.Len()
+	}
+
+	content := buf.String()
+	rendered := make([]string, len(starts)-1)
+	for i := range rendered {
+		rendered[i] = content[starts[i]:starts[i+1]]
+	}
+	return rendered
+}
+
 // WithAttrs implements slog.Handler.WithAttrs
 func (h *TerminalTreeHandler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	h2 := h.clone()
 	h2.attrs = append(h2.attrs, attrs...)
+	h2.renderedAttrs = sync.OnceValue(func() []string {
+		return h2.renderAttrs(h.renderedAttrs(), attrs)
+	})
 	h2.handlerChain[len(h2.handlerChain)-1] = h2
 	return h2
 }
@@ -135,8 +183,23 @@ func (h *TerminalTreeHandler) WithGroup(name string) slog.Handler {
 	h2 := h.clone()
 	h2.groups = append(h2.groups, name)
 	h2.attrs = []slog.Attr{}
+	h2.renderedAttrs = func() []string { return nil }
 	h2.handlerChain = append(h2.handlerChain, h2)
 	return h2
+}
+
+func (h *TerminalTreeHandler) writeGroupHeader(w io.Writer, indent int, name string) error {
+	indentStr := strings.Repeat("  ", indent)
+	if _, err := w.Write([]byte(indentStr)); err != nil {
+		return err
+	}
+	if _, err := writeGroup(w, h.opts.DisableGroupEmoji, h.opts.ColorScheme, name); err != nil {
+		return err
+	}
+	if _, err := w.Write([]byte("\n")); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (h *TerminalTreeHandler) writeAttrGroupValue(w io.Writer, indent int, attr slog.Attr) error {
@@ -148,14 +211,7 @@ func (h *TerminalTreeHandler) writeAttrGroupValue(w io.Writer, indent int, attr 
 			}
 		}
 	} else {
-		indentStr := strings.Repeat("  ", indent)
-		if _, err := w.Write([]byte(indentStr)); err != nil {
-			return err
-		}
-		if _, err := writeGroup(w, h.opts.DisableGroupEmoji, h.opts.ColorScheme, attr.Key); err != nil {
-			return err
-		}
-		if _, err := w.Write([]byte("\n")); err != nil {
+		if err := h.writeGroupHeader(w, indent, attr.Key); err != nil {
 			return err
 		}
 		for _, groupAttr := range groupAttrs {
@@ -259,50 +315,26 @@ func (h *TerminalTreeHandler) sameGroups(h2 *TerminalTreeHandler) bool {
 	return true
 }
 
-// write handler group & attrs, as a function of the current handler at the chain, preventing
-// duplicate attrs
-func (h *TerminalTreeHandler) writeHandlerGroupAttrs(writer io.Writer, ch *TerminalTreeHandler) error {
-	var attrs []slog.Attr
-	var sameGroups bool
-	if ch != nil {
-		if sameGroups = h.sameGroups(ch); sameGroups {
-			attrs = []slog.Attr{}
-			for i, attr := range h.attrs {
-				if i+1 <= len(ch.attrs) && attr.Equal(ch.attrs[i]) {
-					continue
-				}
-				attrs = append(attrs, attr)
-			}
-		} else {
-			attrs = h.attrs
-		}
-	} else {
-		attrs = h.attrs
-	}
-	if len(h.groups) > 0 {
-		if sameGroups {
-			for _, attr := range attrs {
-				if err := h.writeAttr(writer, len(h.groups), attr); err != nil {
-					return err
-				}
-			}
-		} else {
-			attrAny := make([]any, len(attrs))
-			for i, attr := range attrs {
-				attrAny[i] = attr
-			}
-			if err := h.writeAttr(writer, len(h.groups)-1, slog.Group(h.groups[len(h.groups)-1], attrAny...)); err != nil {
-				return err
-			}
-		}
-	} else {
-		for _, attr := range attrs {
-			if err := h.writeAttr(writer, 0, attr); err != nil {
-				return err
-			}
+func (h *TerminalTreeHandler) writeRenderedAttrs(writer io.Writer, rendered []string) error {
+	for _, r := range rendered {
+		if _, err := writer.Write([]byte(r)); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// changedRenderedAttrs returns the entries of hRendered that differ from the entry at the same
+// index in chRendered, ie: the attrs that were not already printed identically for ch.
+func (h *TerminalTreeHandler) changedRenderedAttrs(hRendered, chRendered []string) []string {
+	var changed []string
+	for i, rendered := range hRendered {
+		if i < len(chRendered) && rendered == chRendered[i] {
+			continue
+		}
+		changed = append(changed, rendered)
+	}
+	return changed
 }
 
 func (h *TerminalTreeHandler) writeLevelMessage(

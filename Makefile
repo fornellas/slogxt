@@ -354,6 +354,7 @@ update-deps: go-update
 .PHONY: go-get-u-t
 go-get-u-t: install-go go-mod-tidy
 	$(GO) get -u ./...
+	$(GO) get -u tool
 update-deps: go-get-u-t
 
 ##
